@@ -13,6 +13,7 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 		public bool burpee;
+		public bool isCrouched;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -49,6 +50,11 @@ namespace StarterAssets
 		{
 			BurpeeInput(value.isPressed);
 		}
+
+		public void OnCrouch(InputValue value)
+		{
+			CrouchInput(value.isPressed);
+		}
 #endif
 
 
@@ -75,6 +81,11 @@ namespace StarterAssets
 		public void BurpeeInput(bool newBurpeeState)
 		{
 			burpee = !burpee;
+		}
+
+		public void CrouchInput(bool newCrouchState)
+		{
+			isCrouched = !isCrouched;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

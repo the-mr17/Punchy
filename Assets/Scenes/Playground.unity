@@ -1183,6 +1183,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2029557917923465430, guid: 07c34a36dc04f64488c47c4c0e6de64a,
+        type: 3}
+      propertyPath: CrouchedMoveSpeed
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2029557917923465430, guid: 07c34a36dc04f64488c47c4c0e6de64a,
+        type: 3}
+      propertyPath: CrouchSpeedChangeRate
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 2029557917923465437, guid: 07c34a36dc04f64488c47c4c0e6de64a,
         type: 3}
       propertyPath: m_Name

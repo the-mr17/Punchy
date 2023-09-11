@@ -23,12 +23,16 @@ namespace StarterAssets
         [Tooltip("Sprint speed of the character in m/s")]
         public float SprintSpeed = 5.335f;
 
+        [Tooltip("Crouched Move speed of the character in m/s")]
+        public float CrouchedMoveSpeed = 0.8f;
+
         [Tooltip("How fast the character turns to face movement direction")]
         [Range(0.0f, 0.3f)]
         public float RotationSmoothTime = 0.12f;
 
         [Tooltip("Acceleration and deceleration")]
         public float SpeedChangeRate = 10.0f;
+        public float CrouchSpeedChangeRate = 5f;
 
         public AudioClip LandingAudioClip;
         public AudioClip[] FootstepAudioClips;
@@ -83,12 +87,14 @@ namespace StarterAssets
 
         // player
         private float _speed;
-        private float _animationBlend;
+        private float _speedBlend;
+        private float _crouchBlend;
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
         private bool isBurping = false;
+        private bool isCrouched = false;
 
         // timeout deltatime
         private float _jumpTimeoutDelta;
@@ -101,6 +107,7 @@ namespace StarterAssets
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
         private int _animIDBurpee;
+        private int _animIDCrouch;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
@@ -179,6 +186,7 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDBurpee = Animator.StringToHash("Burpee");
+            _animIDCrouch = Animator.StringToHash("Crouch");
         }
 
         private void GroundedCheck()
@@ -222,7 +230,7 @@ namespace StarterAssets
             if(isBurping) return;
 
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+            float targetSpeed = _input.isCrouched ? CrouchedMoveSpeed : (_input.sprint ? SprintSpeed : MoveSpeed);
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -253,8 +261,11 @@ namespace StarterAssets
                 _speed = targetSpeed;
             }
 
-            _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
-            if (_animationBlend < 0.01f) _animationBlend = 0f;
+            _speedBlend = Mathf.Lerp(_speedBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
+            if (_speedBlend < 0.01f) _speedBlend = 0f;
+
+            _crouchBlend = Mathf.Lerp(_crouchBlend, Convert.ToInt32(_input.isCrouched), Time.deltaTime * CrouchSpeedChangeRate);
+            if (_crouchBlend < 0.01f) _crouchBlend = 0f;
 
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
@@ -282,7 +293,8 @@ namespace StarterAssets
             // update animator if using character
             if (_hasAnimator)
             {
-                _animator.SetFloat(_animIDSpeed, _animationBlend);
+                _animator.SetFloat(_animIDSpeed, _speedBlend);
+                _animator.SetFloat(_animIDCrouch, _crouchBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
             }
         }
@@ -404,7 +416,6 @@ namespace StarterAssets
         }
 
         public void SetIsBurping(int isBurping) {
-            Debug.Log("ok");
             this.isBurping = Convert.ToBoolean(isBurping);
         }
     }

@@ -15,6 +15,7 @@ namespace StarterAssets
 		public bool burpee;
 		public bool isCrouched;
 		public bool isBoxing;
+		public bool isPunching;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -61,6 +62,11 @@ namespace StarterAssets
 		{
 			BoxingInput(value.isPressed);
 		}
+
+		public void OnPunch(InputValue value) 
+		{
+			PunchingInput(value.isPressed);
+		}
 #endif
 
 
@@ -97,6 +103,12 @@ namespace StarterAssets
 		public void BoxingInput(bool newCrouchState)
 		{
 			isBoxing = !isBoxing;
+		}
+
+		public void PunchingInput(bool newPunchState)
+		{
+			if(!isBoxing) return;
+			isPunching = newPunchState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

@@ -116,6 +116,7 @@ namespace StarterAssets
         private int _animIDBoxing;
         private int _animIDBoxingX;
         private int _animIDBoxingY;
+        private int _animIDPunch;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
@@ -199,6 +200,7 @@ namespace StarterAssets
             _animIDBoxing = Animator.StringToHash("Boxing");
             _animIDBoxingX = Animator.StringToHash("BoxingX");
             _animIDBoxingY = Animator.StringToHash("BoxingY");
+            _animIDPunch = Animator.StringToHash("Punch");
         }
 
         private void GroundedCheck()
@@ -402,6 +404,10 @@ namespace StarterAssets
         private void Boxing() {
             isBoxing = _input.isBoxing;
             _animator.SetBool(_animIDBoxing, isBoxing);
+
+            if(_input.isPunching) {
+                _animator.SetBool(_animIDPunch, true);
+            }
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
@@ -447,6 +453,11 @@ namespace StarterAssets
 
         public void SetIsBurping(int isBurping) {
             this.isBurping = Convert.ToBoolean(isBurping);
+        }
+
+        public void ResetPunching() {
+            _input.isPunching = false;
+            _animator.SetBool(_animIDPunch, false);
         }
     }
 }

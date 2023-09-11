@@ -26,6 +26,9 @@ namespace StarterAssets
         [Tooltip("Crouched Move speed of the character in m/s")]
         public float CrouchedMoveSpeed = 0.8f;
 
+        [Tooltip("Boxing Move speed of the character in m/s")]
+        public float BoxingMoveSpeed = 0.4f;
+
         [Tooltip("How fast the character turns to face movement direction")]
         [Range(0.0f, 0.3f)]
         public float RotationSmoothTime = 0.12f;
@@ -89,12 +92,14 @@ namespace StarterAssets
         private float _speed;
         private float _speedBlend;
         private float _crouchBlend;
+        private float _boxingXBlend;
+        private float _boxingYBlend;
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
         private bool isBurping = false;
-        private bool isCrouched = false;
+        private bool isBoxing = false;
 
         // timeout deltatime
         private float _jumpTimeoutDelta;
@@ -108,6 +113,9 @@ namespace StarterAssets
         private int _animIDMotionSpeed;
         private int _animIDBurpee;
         private int _animIDCrouch;
+        private int _animIDBoxing;
+        private int _animIDBoxingX;
+        private int _animIDBoxingY;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
@@ -171,6 +179,7 @@ namespace StarterAssets
             GroundedCheck();
             Move();
             Burpee();
+            Boxing();
         }
 
         private void LateUpdate()
@@ -187,6 +196,9 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDBurpee = Animator.StringToHash("Burpee");
             _animIDCrouch = Animator.StringToHash("Crouch");
+            _animIDBoxing = Animator.StringToHash("Boxing");
+            _animIDBoxingX = Animator.StringToHash("BoxingX");
+            _animIDBoxingY = Animator.StringToHash("BoxingY");
         }
 
         private void GroundedCheck()
@@ -230,13 +242,14 @@ namespace StarterAssets
             if(isBurping) return;
 
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.isCrouched ? CrouchedMoveSpeed : (_input.sprint ? SprintSpeed : MoveSpeed);
+            float targetSpeed = _input.isBoxing? BoxingMoveSpeed : (_input.isCrouched ? CrouchedMoveSpeed : (_input.sprint ? SprintSpeed : MoveSpeed));
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
             // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is no input, set the target speed to 0
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+
 
             // a reference to the players current horizontal velocity
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
@@ -267,24 +280,34 @@ namespace StarterAssets
             _crouchBlend = Mathf.Lerp(_crouchBlend, Convert.ToInt32(_input.isCrouched), Time.deltaTime * CrouchSpeedChangeRate);
             if (_crouchBlend < 0.01f) _crouchBlend = 0f;
 
+            _boxingXBlend = Mathf.Lerp(_boxingXBlend, Convert.ToInt32(_input.move.x), Time.deltaTime * CrouchSpeedChangeRate);
+
+            _boxingYBlend = Mathf.Lerp(_boxingYBlend, Convert.ToInt32(_input.move.y), Time.deltaTime * CrouchSpeedChangeRate);
+            
+
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
             if (_input.move != Vector2.zero)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                _targetRotation = (isBoxing ? 0f : Mathf.Atan2(inputDirection.x, inputDirection.z)) * Mathf.Rad2Deg +
                                   _mainCamera.transform.eulerAngles.y;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                     RotationSmoothTime);
 
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                // rotate to face input direction relative to camera position if not in boxing mode
+                //if(!_input.isBoxing) {
+                    transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                //} else {
+                //    transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                //}
             }
 
 
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation + (isBoxing ? Mathf.Atan2(inputDirection.x, inputDirection.z) : 0f) * Mathf.Rad2Deg, 0.0f) * Vector3.forward;
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
@@ -295,6 +318,8 @@ namespace StarterAssets
             {
                 _animator.SetFloat(_animIDSpeed, _speedBlend);
                 _animator.SetFloat(_animIDCrouch, _crouchBlend);
+                _animator.SetFloat(_animIDBoxingX, _boxingXBlend);
+                _animator.SetFloat(_animIDBoxingY, _boxingYBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
             }
         }
@@ -372,6 +397,11 @@ namespace StarterAssets
             if(Grounded) {
                 _animator.SetBool(_animIDBurpee, _input.burpee);
             }
+        }
+
+        private void Boxing() {
+            isBoxing = _input.isBoxing;
+            _animator.SetBool(_animIDBoxing, isBoxing);
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)

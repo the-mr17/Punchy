@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
@@ -16,6 +17,7 @@ namespace StarterAssets
 		public bool isCrouched;
 		public bool isBoxing;
 		public bool isPunching;
+		public bool isDodging;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -67,6 +69,11 @@ namespace StarterAssets
 		{
 			PunchingInput(value.isPressed);
 		}
+
+		public void OnDodge(InputValue value) 
+		{
+			DodgingInput(value.isPressed);
+		}
 #endif
 
 
@@ -109,6 +116,12 @@ namespace StarterAssets
 		{
 			if(!isBoxing) return;
 			isPunching = newPunchState;
+		}
+
+		public void DodgingInput(bool newDodgeState)
+		{
+			if(!isBoxing) return;
+			isDodging = newDodgeState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

@@ -119,6 +119,7 @@ namespace StarterAssets
         private int _animIDBoxingX;
         private int _animIDBoxingY;
         private int _animIDPunch;
+        private int _animIDDodge;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
@@ -204,6 +205,7 @@ namespace StarterAssets
             _animIDBoxingX = Animator.StringToHash("BoxingX");
             _animIDBoxingY = Animator.StringToHash("BoxingY");
             _animIDPunch = Animator.StringToHash("Punch");
+            _animIDDodge = Animator.StringToHash("Dodge");
         }
 
         private void GroundedCheck()
@@ -410,6 +412,8 @@ namespace StarterAssets
 
             if(_input.isPunching) {
                 _animator.SetBool(_animIDPunch, true);
+            } else if(_input.isDodging) {
+                _animator.SetBool(_animIDDodge, true);
             }
         }
 
@@ -461,6 +465,11 @@ namespace StarterAssets
         public void ResetPunching() {
             _input.isPunching = false;
             _animator.SetBool(_animIDPunch, false);
+        }
+
+        public void ResetDodging() {
+            _input.isDodging = false;
+            _animator.SetBool(_animIDDodge, false);
         }
     }
 }

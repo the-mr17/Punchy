@@ -8,12 +8,18 @@ public class Dummy : MonoBehaviour
     private Animator _animator;
     private bool _hasAnimator;
     private int _animIDHit;
+    private int _animIDPunch;
+
+    public bool isPunching;
 
     // Start is called before the first frame update
     void Start()
     {
         _hasAnimator = TryGetComponent(out _animator);
         _animIDHit = Animator.StringToHash("Hit");
+        _animIDPunch = Animator.StringToHash("Punch");
+
+        _animator.SetBool(_animIDPunch, isPunching);
     }
 
     // Update is called once per frame
